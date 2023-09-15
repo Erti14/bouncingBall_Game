@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Bouncing Ball</title>
+
+</head>
+
+<body>
+    <canvas id="MeinCanvas" width="600" height="600"></canvas>
+    <div class="player2">
+        <h2 class="one">Player 2</h1>
+            <section>
+                <span class="key">W</span>
+                <span class="key">A</span>
+                <span class="key">S</span>
+                <span class="key">D</span>
+            </section>
+
+    </div>
+
+    <div class="buttons">
+        <button class="btn" id="click"><span></span>
+            <p data-start="good luck!" data-text="start!" data-title="new game"></p>
+        </button>
+        <button class="btn" id="restart"><span></span>
+            <p data-start="good luck!" data-text="start!" data-title="rematch"></p>
+        </button>
+        <h1 id="scoreTable"></h1>
+        <h2 id="result"></h2>
+
+    </div>
+
+    <div class="player1">
+        <h2 class="one">Player 1</h1>
+            <section>
+                <span class="key">&uarr;</span>
+                <span class="key">&larr;</span>
+                <span class="key">&darr;</span>
+                <span class="key">&rarr;</span>
+            </section>
+    </div>
+
+    <script>
+
+        var x = 20; //X-Coordinate
+        var y = 200; //Y-Coordinate
+        var dx = 0.5; //Movement of the ball in the x Direction
+        var dy = 1; //Movement of the ball in the y Direction
+        var R = 7.5; //Radius of the ball
+
+        var padlxcord = MeinCanvas.width / 4;
+        var padlxcord2 = MeinCanvas.width / 2;
+        var context = MeinCanvas.getContext('2d');
+        var HEIGHT = MeinCanvas.height;
+        var WIDTH = MeinCanvas.width;
+        let score1 = 0;
+        let score2 = 0;
+        let myButton = document.getElementById('click');
+        let restartButton = document.getElementById('restart');
+        let scoreTable = document.getElementById('scoreTable');
+        let player1 = 1;
+        let player2 = 2;
+        let gameResult = document.getElementById('result');
+
+
+        //Drawing the first paddle
+        function padl(x) {
+            //The padle has 4 Parameters (a,b,c,d)
+            //A -> X - Coordinate of Start-Point
+            //B -> X - Coordinate of End-Point
+            //C -> Height
+            //D -> Width
+
+            context.fillRect(x, HEIGHT - 50, WIDTH / 3.5, 15)
+        }
+
+
+        //Drawing the second paddle
+        //The method is the same but it has different coordinates
+        function padl2(x) {
+            context.fillRect(x, HEIGHT - 570, WIDTH / 3.5, 15)
+
+        }
+
+        function clear() {
+            //everything under the paddle will be deleted
+            //clearRect(a,b,c,d) just like fillRect
+            context.clearRect(0, 0, WIDTH, HEIGHT)
+        }
+
+
+        //Movement of the first paddle
+        function move(event) {
+            if (event.key == 'ArrowLeft' && padlxcord > 0) {
+                padlxcord -= 5;
+            }
+            else if (event.key == 'ArrowRight' && padlxcord < WIDTH - 170) {
+                padlxcord += 5;
+            }
+        }
+
+        //Movement of the second paddle
+        function move2(event) {
+            if (event.key == 'a' && padlxcord2 > 0) {
+                padlxcord2 -= 5;
+            }
+            else if (event.key == 'd' && padlxcord2 < WIDTH - 170) {
+                padlxcord2 += 5;
+            }
+        }
+
+        function ball(x, y, R) {
+            context.fillStyle = "black";
+            context.beginPath();
+            context.arc(x, y, R, 0, Math.PI * 2);
+            context.closePath();
+            context.fill();
+
+        }
+
+        function stopGame(winner) {
+            document.removeEventListener('keydown', move);
+            document.removeEventListener('keydown', move2);
+            restartButton.style.display = "flex";
+            gameResult.innerHTML = winner;
+            scoreTable.style.display = "none";
+        }
+
+        function reset(random) {
+            x = 20;
+            y = 200;
+            dx = 0.5;
+            dy = 1;
+            R = 7.5;
+
+            if (random == 1) {
+                if (score1 >= 4) {
+                    stopGame("Player 1 won")
+                }
+                else {
+                    document.addEventListener('keydown', move);
+                    document.addEventListener('keydown', move2);
+                }
+                score1++;
+            }
+
+            else if (random == 2) {
+                if (score2 >= 4) {
+                    stopGame("Player 2 won");
+                }
+
+                else {
+                    document.addEventListener('keydown', move);
+                    document.addEventListener('keydown', move2);
+                }
+                score2++;
+            }
+            scoreTable.innerHTML = score1 + " - " + score2;
+        }
+
+        function draw() {
+            clear();
+            padl(padlxcord);
+            padl2(padlxcord2);
+            ball(x, y, R);
+            x += dx;
+            y += dy;
+
+
+            //if the ball hits the left or the right side of the canvas
+            if (x <= 0 || x >= WIDTH) {
+                dx *= -1;
+            }
+
+            //if the ball hits the first paddle
+            else if (x >= padlxcord && x <= padlxcord + WIDTH / 3.5 && y == HEIGHT - 50) {
+                dy *= -1;
+            }
+
+            //if the ball passes the first paddle
+            else if (y >= 600) {
+                reset(player2);
+            }
+
+
+            //if the ball hits the second paddle
+            else if (x >= padlxcord2 && x <= padlxcord2 + WIDTH / 3.5 && y == HEIGHT - 550) {
+                dy *= -1;
+            }
+
+            //if the ball passes the second paddle
+            else if(y <= 0){
+                reset(player1);
+            }
+        }
+
+
+        function init(){
+            score1 = 0;
+            score2 = 0;
+            myButton.style.display = "none";
+            scoreTable.style.display = "block";
+            restartButton.style.display = "none";
+            gameResult.innerHTML ="";
+            document.addEventListener('keydown', move);
+            document.addEventListener('keydown', move2);
+            scoreTable.innerHTML = "0 - 0";
+            return setInterval(draw, 5);
+
+        }
+
+        myButton.addEventListener('click', init);
+        restartButton.addEventListener('click', init);
+
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>
